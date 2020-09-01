@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        .el-loading-spinner .circular{
+            width: 80px;
+            height: 80px;
+        }
+        .el-pagination{
+            padding: 10px;
+            border: 1px solid #EBEEF5;
+            border-top: none;
+        }
+    </style>
+    <style>
+        .wrap {
+            margin: 0 auto;
+            width: 1200px;
+        }
+        .nav-tab{
+            padding: 20px 0;
+        }
+        .paging{
+            
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="nav-tab">
+            <el-row>
+                <el-button
+                  :type="isOldMemberVisible ? 'primary' : null" 
+                  round
+                  @click="showOldMember"
+                  >
+                    有工会卡
+                </el-button>
+                <el-button
+                  :type="isNewMemberVisible ? 'primary' : null" 
+                  round
+                  @click="showNewMember"
+                  >
+                    无工会卡
+                </el-button>
+            </el-row>
+        </div>
+
+        <div class="table">
+            <el-table
+              v-if="isOldMemberVisible"
+              v-loading="loading"
+              element-loading-text="加载中"
+              element-loading-background="rgba(255, 255, 255, 0.9)"
+              :data="members"
+              :header-cell-style="{background:'#DCDFE6',color:'#000','font-weight':'normal'}"
+              border
+              style="width: 100%"
+              >
+                <el-table-column
+                  header-align="center"  
+                  align="center"
+                  label="#"
+                  type="index"
+                  
+                  >
+                    <template scope="scope">
+                        <span>{{(currentPage - 1) * limit + scope.$index + 1}}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column
+                  prop="name"
+                  header-align="center"
+                  align="center"
+                  label="姓名"
+                  width="120"
+                  >
+                </el-table-column>
+                <el-table-column
+                  prop="sex"
+                  header-align="center"
+                  align="center"
+                  label="性别"
+                  :formatter="chargeSex"
+                  width="100"
+                  >
+                </el-table-column>
+                <el-table-column
+                  prop="idNO"
+                  header-align="center"
+                  align="center"
+                  label="身份证号码">
+                </el-table-column>
+                <el-table-column
+                  prop="numID"
+                  header-align="center"
+                  align="center"
+                  label="工会卡号">
+                </el-table-column>
+                <el-table-column
+                  prop="hukou"
+                  header-align="center"
+                  align="center"
+                  label="是否农村户口"
+                  sortable
+                  :formatter="chargeHuKou"
+                  >
+                </el-table-column>
+                <el-table-column
+                  prop="tjtime"
+                  header-align="center"
+                  align="center"
+                  label="登记时间">
+                </el-table-column>
+            </el-table>
+
+
+            <el-table
+              v-if="isNewMemberVisible"
+              v-loading="loading"
+              element-loading-text="加载中"
+              element-loading-background="rgba(255, 255, 255, 0.9)"
+              :data="members"
+              :header-cell-style="{background:'#DCDFE6',color:'#000','font-weight':'normal'}"
+              border
+              
+              >
+                <el-table-column
+                  header-align="center"  
+                  align="center"
+                  label="#"
+                  type="index"
+                  >
+                    <template scope="scope">
+                        <span>{{(currentPage - 1) * limit + scope.$index + 1}}</span>
+                    </template>
+                </el-table-column>
+                </el-table-column>
+                <el-table-column
+                  prop="name"
+                  header-align="center"
+                  align="center"
+                  label="姓名"
+                  >
+                </el-table-column>
+                <el-table-column
+                  prop="six"
+                  header-align="center"
+                  align="center"
+                  label="性别"
+                  :formatter="chargeSex"
+                  >
+                </el-table-column>
+                <el-table-column
+                  prop="zjtype"
+                  :formatter="chargeZjType"
+                  header-align="center"
+                  align="center"
+                  label="证件类型"
+                  width="180"
+                  >
+                </el-table-column>
+                
+                <el-table-column
+                  prop="zjnum"
+                  header-align="center"
+                  align="center"
+                  label="身份证号码"
+                  width="250"
+                  >
+                </el-table-column>
+                <el-table-column
+                  prop="birday"
+                  header-align="center"
+                  align="center"
+                  label="出生年月日"
+                  width="250"
+                  >
+                </el-table-column>
+                <el-table-column
+                  prop="stattime""
+                  header-align="center"
+                  align="center"
+                  label="证件有效起始日"
+                  width="250"
+                  >
+                </el-table-column>
+                <el-table-column
+                  prop="endtime""
+                  header-align="center"
+                  align="center"
+                  label="证件有效结束日"
+                  width="250"
+                  >
+                </el-table-column>
+                <el-table-column
+                  prop="phone"
+                  header-align="center"
+                  align="center"
+                  label="移动电话"
+                  width="250"
+                  >
+                </el-table-column>
+                <el-table-column
+                  prop="tel"
+                  header-align="center"
+                  align="center"
+                  label="联系电话"
+                  width="250"
+                  >
+                </el-table-column>
+                <el-table-column
+                  prop="mingzhu"
+                  :formatter="chargeMinZu"
+                  header-align="center"
+                  align="center"
+                  label="民族">
+                </el-table-column>
+                <el-table-column
+                  prop="guojia"
+                  :formatter="chargeCountry"
+                  header-align="center"
+                  align="center"
+                  label="国家地区">
+                </el-table-column>
+                <el-table-column
+                  prop="xueli"
+                  :formatter="chargeXueLi"
+                  header-align="center"
+                  align="center"
+                  label="学历"
+                  width="120"
+                  >
+                </el-table-column>
+                <el-table-column
+                  prop="jiuye"
+                  :formatter="chargeJiuYe"
+                  header-align="center"
+                  align="center"
+                  label="就业状态"
+                  width="180"
+                  >
+                </el-table-column>
+                <el-table-column
+                  prop="gangwei"
+                  :formatter="chargeGangWei"
+                  header-align="center"
+                  align="center"
+                  label="岗位状态"
+                  width="250"
+                  >
+                </el-table-column>
+                <el-table-column
+                  prop="jineng"
+                  :formatter="chargeJiNeng"
+                  header-align="center"
+                  align="center"
+                  label="技能等级"
+                  width="180"
+                  >
+                </el-table-column>
+                <el-table-column
+                  prop="juzhu"
+                  :formatter="chargeJuZhu"
+                  header-align="center"
+                  align="center"
+                  label="现居住地"
+                  width="180"
+                  >
+                </el-table-column>
+                <el-table-column
+                  prop="nongchun"
+                  header-align="center"
+                  align="center"
+                  label="是否农村户口"
+                  sortable
+                  :formatter="chargeHuKou"
+                  width="180"
+                  >
+                </el-table-column>
+                <el-table-column
+                  prop="titime"
+                  header-align="center"
+                  align="center"
+                  label="登记时间"
+                  width="250"
+                  >
+                </el-table-column>
+            </el-table>
+
+            <div class="paging" ref="paging">
+                <el-pagination 
+                    v-if="isPaginationVisible"
+                    background
+                    @size-change="handleSizeChange" 
+                    @current-change="handleCurrentChange"
+                    :current-page="currentPage" 
+                    :page-sizes="[10, 20, 30, 40]" 
+                    :page-size="limit"
+                    layout="total, sizes, prev, pager, next, jumper" 
+                    :total="totalCount"
+                    >
+                </el-pagination>
+            </div>
+        </div>
+    </div>
+
+    <script src="./tmpData.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <script>
+        let vm = new Vue({
+            el:'.wrap',
+            data(){
+                return{
+                    data: {},
+                    members: [],
+                    currentPage:1,
+                    limit: 10,
+                    new: 'old',
+                    tableData: [],
+                    totalCount: 0,
+                    loading: true,
+                    isOldMemberVisible: true,
+                    isNewMemberVisible: false, // 控制newMember
+                    isPaginationVisible: false, //控制分页器是否显示
+                }
+            },
+            created() {
+                this.init();
+            },
+            watch: {
+                members(){
+                    this.loading = false;
+                    if(this.members){
+                        this.isPaginationVisible = true;
+                    }
+
+                    if(this.new == 'new'){
+                        this.isOldMemberVisible = false;
+                        this.isNewMemberVisible = true;
+                    }else if(this.new == 'old'){
+                        this.isOldMemberVisible = true;
+                        this.isNewMemberVisible = false;
+                    }
+                },
+                currentPage(){
+                    this.loading = true;
+                    this.getMembers();
+                },
+                limit(){
+                    this.loading = true;
+                    this.currentPage = 1;
+                    this.getMembers();
+                },
+                new(){
+                    this.currentPage = 1;
+                    this.limit = 10;
+                    this.getMembers();
+                },
+            },
+            methods: {
+                init(){
+                    this.getMembers();
+                },
+                // 发送获取数据请求
+                getMembers(){
+                    axios.get('http://kst1.xmmylike.com/1/gonghuinew/data.php', {
+                        params: {
+                            new: this.new,
+                            limit: this.limit,
+                            page: this.currentPage
+                        }
+                    }).then(res => {
+                        console.log(res.data.total);
+                        this.data = res.data;
+                        this.members = this.data.data;
+                        this.totalCount = parseInt(this.data.total);
+                        console.log(this.members);
+                    });
+                },
+                handleSizeChange(val) {
+                    this.limit = val;
+                    console.log(`每页 ${val} 条`);
+                },
+                handleCurrentChange(val) {
+                    this.currentPage = val;
+                    console.log(`当前页: ${val}`);
+                },
+                showOldMember(){
+                    this.new = 'old';
+                },
+                showNewMember(){
+                    this.new = 'new';
+                },
+                chargeHuKou(row,column){
+                  if(row.hukou){
+                    return row.hukou == 0 ? '否' : '是';
+                  }else if(row.nongchun){
+                    return row.nongchun == 0 ? '否' : '是';
+                  }
+                },
+                chargeSex(row,column){
+                    let sex;
+                    if(row.sex){
+                        sex = row.sex == 1 ? '男' : '女';
+                    }else if(row.six){
+                        sex = row.six == 1 ? '男' : '女';
+                    }
+                    return sex;
+                },
+                
+                chargeZjType(row,column){
+                    return row.zjtype == 1 ? '身份证' : (row.zjtype == 3 ? '护照' : '港澳通行证');
+                },
+                chargeMinZu(row,column){
+                    return MINZU[row.mingzhu-1];
+                },
+                chargeCountry(row,column){
+                    return GUOJIA[row.guojia-1];
+                },
+                chargeXueLi(row,column){
+                    return XUELI[row.xueli - 1];
+                },
+                chargeJiuYe(row,column){
+                    return JIUYE[row.jiuye - 1];
+                },
+                chargeGangWei(row,column){
+                    return GANGWEI[row.gangwei -1];
+                },
+                chargeJiNeng(row,column){
+                    return JINENG[row.jineng - 1];
+                },
+                chargeJuZhu(row,column){
+                    return JUZHU[row.juzhu];
+                },
+            },
+        });
+    </script>
+</body>
+
+</html>
